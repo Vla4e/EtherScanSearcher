@@ -61,8 +61,8 @@ class ContractsSpider(scrapy.Spider):
   def parse_content(self, response):
     self.driver.get(response.url)
 
-    self.driver.execute_script("updatehash('code')")
-    time.sleep(0.5)
+    self.driver.execute_script('updatehash(\'code\')')
+    time.sleep(0.75)
 
     contract_name = self.driver.title.split('|')[0].strip()
     contract_address = self.driver.find_element_by_id('mainaddress').text.lower()
