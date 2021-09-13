@@ -3,6 +3,7 @@ const db = new Datastore({
   filename: 'Tg.db',
   autoload: true
 })
+db.persistence.setAutocompactionInterval(5 * 1000)
 
 const fetchStubbornNotTelegram = async () => {
   return new Promise((resolve, reject) => {
