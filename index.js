@@ -1,5 +1,7 @@
 const scrapeContractAddresses = require('./scraper')
 const processContractAddresses = require('./etherrer')
+const insertContract = require('./db')
+const doesExist = require('./db')
 // const { searchTelegramGroup, sendAlertForDetectedGroup } = require('./telegrammer')
 
 // scrapeContractAddresses()
@@ -17,6 +19,14 @@ const init = async () => {
   contractsWithoutTelegram.forEach((contract) => {
     // const hasMatchingGroup = searchTelegramGroup(contract)
     // TODO: append contract name as telegram username if found
+  })
+
+  contracts.forEach((result) => {
+    if(doesExist(result.address)){
+      console.log(`Contract ${result.contract} is already in the database.`)
+    } else {
+      insertContract(result);
+    }
   })
   // TODO: send out message alerts for contracts that end up with a matching telegram acc
 }

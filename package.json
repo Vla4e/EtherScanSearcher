@@ -9,10 +9,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "nedb": "^1.8.0",
     "nodejs-web-scraper": "^6.0.1",
     "request": "^2.88.2",
-    "save": "^2.4.0",
-    "tdl": "^7.0.0",
-    "tdl-tdlib-addon": "^1.0.1"
+    "save": "^2.4.0"
   }
 }
