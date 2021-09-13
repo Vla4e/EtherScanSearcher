@@ -1,44 +1,39 @@
 const scrapeContractAddresses = require('./scraper')
-const {processContractAddresses} = require('./etherrer')
-const { insertContract, updateContract, doesExist, fetchStubbornNotTelegram } = require('./db')
-// const { searchTelegramGroup, sendAlertForDetectedGroup } = require('./telegrammer')
+const { processContractAddresses } = require('./etherrer')
+const { insertContract, updateContract, doesExist, fetchStubbornNotTelegram, fetchWithPendingAlert } = require('./db')
+const { searchTelegramGroup, sendAlertForDetectedGroup } = require('./telegrammer')
 
-// scrapeContractAddresses()
-// processContractAddress('0xea5b5f81d8ad4e5ffa426cdceab4164bb08dfd60')
-// searchTelegramGroup({
-//   address: '0xea5b5f81d8ad4e5ffa426cdceab4164bb08dfd60',
-//   contract: 'PartyADA'
-// })
-
-const init = async () => {
+const runIteration = async () => {
   const addresses = await scrapeContractAddresses(pages=1)
-  const newAddresses = [];
+  const newAddresses = []
 
   while (addresses.length) {
     const newAddress = addresses.pop()
-    if(await doesExist(newAddress)){
-      console.log("Address already exists in the DB")
-    } else {
+    if (!await doesExist(newAddress)) {
       newAddresses.push(newAddress)
     }
   }
 
   const contracts = (await processContractAddresses(newAddresses)).filter(x => x)
-  contracts.forEach(async (result) => {
-    await insertContract(result);
-  })
-
-  await Promise.all(contracts.map(contract => insertContract(contract)))
+  await Promise.all(contracts.map(async contract => await insertContract(contract)))
 
   const contractsNeedTdlibCheck = await fetchStubbornNotTelegram()
-  await Promise.all(contractsNeedTdlibCheck.map(contract => {
-    const hasMatchingGroup = searchTelegramGroup(contract)
+  await Promise.all(contractsNeedTdlibCheck.map(async (contract) => {
+    const hasMatchingGroup = await searchTelegramGroup(contract.contract)
     if (hasMatchingGroup) {
-      return updateContract(contract.address, contract.contract)
+      return await updateContract(contract.address, { telegram: contract.contract })
     }
     return Promise.resolve()
   }))
 
-  // TODO: send out message alerts for contracts that end up with a matching telegram acc
+  const contractsPendingAlert = await fetchWithPendingAlert()
+  await Promise.all(contractsPendingAlert.map(async (contract) => {
+    await sendAlertForDetectedGroup(contract)
+    return await updateContract(contract.address, { alertSent: true })
+  }))
+
+  console.log('Iteration done!')
+  return true
 }
-init()
+
+runIteration()

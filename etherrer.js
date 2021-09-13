@@ -18,7 +18,7 @@ const getContractModule = (address, action) => {
   })
 }
 
-const getTelegramFromSourceCode = (sourceCode) => {
+const getTelegramFromSourceCode = (sourceCode, address) => {
   try {
     const lines = []
     Object.values(sourceCode).forEach(({ content: fileSourceCode }) => {
@@ -27,12 +27,12 @@ const getTelegramFromSourceCode = (sourceCode) => {
     })
     const telegramLine = lines.find(line => line.includes('t.me'))
     if (telegramLine) {
-      const telegramUrl = telegramLine.trim().match(/(https?:\/\/[^ ]*)/)[1].replace('https://t.me/', '@')
-      return telegramUrl
+      const telegramUsername = telegramLine.trim().split('t.me')[1].replace(/[^\w _]+/g, '').trim()
+      return telegramUsername
     }
     return null
   } catch(e) {
-    console.error(sourceCode, e)
+    console.error(address, e)
     return null
   }
 }
@@ -51,7 +51,7 @@ const processContractAddress = async (address) => {
       }
     }
   }
-  const telegram = getTelegramFromSourceCode(sourceCode)
+  const telegram = getTelegramFromSourceCode(sourceCode, address)
   const result = { contract: contractName, address, telegram }
   console.debug(result)
   return result

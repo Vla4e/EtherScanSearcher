@@ -48,7 +48,7 @@ const searchTelegramGroup = async (username) => {
   }
 }
 
-const sendAlertForDetectedGroup = ({ address, contract: username }) => {
+const sendAlertForDetectedGroup = async ({ address, contract: username }) => {
   await tdBotClient.invoke({
     _: 'sendMessage',
     chat_id: CHAT_ID,
@@ -56,7 +56,7 @@ const sendAlertForDetectedGroup = ({ address, contract: username }) => {
       _: 'inputMessageText',
       text: {
         _: 'formattedText',
-        text: `Heya! Found a corresponding Telegram group for an Ethereum contract at https://etherscan.io/contractsVerified/${address} : ${username}.`
+        text: `Heya! Found a corresponding Telegram group for an Ethereum contract at https://etherscan.io/address/${address} : ${username}.`
       }
     }
   })
