@@ -8,5 +8,8 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {}
+  "dependencies": {
+    "tdl": "^7.0.0",
+    "tdl-tdlib-addon": "^1.0.1"
+  }
 }

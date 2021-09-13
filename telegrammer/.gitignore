@@ -20,3 +20,8 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw?
+
+*.dylib
+
+/_td_database
+/_td_files
