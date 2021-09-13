@@ -4,20 +4,16 @@ const db = new Datastore({ filename: 'Tg.db', autoload: true });
 
 let removeAll = false; // if set to True -> deletes whole database when running "node db.js" in cmd.
 
-async function fetchUncheckedAddresses(){
+async function fetchStubbornNotTelegram(){
     return new Promise((resolve, reject) => {
-            const UncheckedAddresses = []
-            db.find({telegramChecked: false}, (err, doc) => {
-                
+            db.find({
+                telegramCheckedInSource: true,
+                telegram: null
+            }, (err, doc) => {
                 if(err){
                     return reject(err)
                 }
-
-                doc.forEach(element => {  
-                    UncheckedAddresses.push(element.address)
-                    //return UncheckedAddresses
-                });
-                return resolve(UncheckedAddresses)
+                return resolve(doc)
             })
         }
     )
@@ -25,32 +21,47 @@ async function fetchUncheckedAddresses(){
 
 function doesExist(resultAddress){
     return new Promise((resolve, reject) => {
-        try{
-            let exist = false
-            db.findOne({address: resultAddress}, function (err, doc){
-                //console.log(doc)
-                    if(doc !== null && doc.address === resultAddress){
-                        exist = true;
-                    }
-                    return resolve(exist);
-                })
-        }
-        catch(e){
-            return reject(e)
-        }
+        db.findOne({address: resultAddress}, function (err, doc){
+                if (err) return reject(err)
+
+                if(doc !== null && doc.address === resultAddress){
+                    resolve(true)
+                }
+                resolve(false);
+            })
+        // try{
+        //     let exist = false
+        // }
+        // catch(e){
+        //     return reject(e)
+        // }
     })
 }
 
 function insertContract(result){
-    db.insert({
-        contract: result.contract, 
-        address: result.address,
-        telegram: result.telegram,
-        telegramChecked: false, 
-        alertSent: false,}, 
-    function (err, newDoc) {
-    
-    });
+    return new Promise((resolve, reject) => {
+        db.insert({
+            contract: result.contract, 
+            address: result.address,
+            telegram: result.telegram,
+            telegramCheckedInSource: true,
+            alertSent: false
+        }, 
+        (err, newDoc) => {
+            if (err) return reject(err)
+            resolve(newDoc)
+        });
+    })
+}
+
+function updateContract(address, contractName) {
+    return new Promise((resolve, reject) => {
+        db.update({ address }, { $set: { telegram: contractName } }, { multi: false },
+        (err) => {
+            if (err) return reject(err)
+            resolve()
+        });
+    })
 }
 
 // function removeContract(){
@@ -65,4 +76,4 @@ if(removeAll){
     });
 }
 
-module.exports = { insertContract, doesExist, fetchUncheckedAddresses }
+module.exports = { insertContract, updateContract, doesExist, fetchStubbornNotTelegram }

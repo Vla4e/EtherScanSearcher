@@ -1,6 +1,6 @@
 const scrapeContractAddresses = require('./scraper')
-const {processContractAddresses, processContractAddress} = require('./etherrer')
-const { insertContract, doesExist, fetchUncheckedAddresses } = require('./db')
+const {processContractAddresses} = require('./etherrer')
+const { insertContract, updateContract, doesExist, fetchStubbornNotTelegram } = require('./db')
 // const { searchTelegramGroup, sendAlertForDetectedGroup } = require('./telegrammer')
 
 // scrapeContractAddresses()
@@ -23,20 +23,21 @@ const init = async () => {
     }
   }
 
-
-  const contracts = await processContractAddresses(newAddresses)
-  const contractsWithoutTelegram = contracts.filter(contract => !contract.telegram)
-  contractsWithoutTelegram.forEach((contract) => {
-    //const hasMatchingGroup = searchTelegramGroup(contract)
-    //TODO: append contract name as telegram username if found
- })
-
+  const contracts = (await processContractAddresses(newAddresses)).filter(x => x)
   contracts.forEach(async (result) => {
-      insertContract(result);
+    await insertContract(result);
   })
 
-  const uncheckedAddresses = await fetchUncheckedAddresses()
-  
+  await Promise.all(contracts.map(contract => insertContract(contract)))
+
+  const contractsNeedTdlibCheck = await fetchStubbornNotTelegram()
+  await Promise.all(contractsNeedTdlibCheck.map(contract => {
+    const hasMatchingGroup = searchTelegramGroup(contract)
+    if (hasMatchingGroup) {
+      return updateContract(contract.address, contract.contract)
+    }
+    return Promise.resolve()
+  }))
 
   // TODO: send out message alerts for contracts that end up with a matching telegram acc
 }

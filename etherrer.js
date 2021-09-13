@@ -7,9 +7,13 @@ const getContractModule = (address, action) => {
     const url = `https://api.etherscan.io/api?module=contract&action=${action}&address=${address}&apikey=${API_KEY}`
     request(url, (err, _, body) => {
       if (err) return reject(err)
-      const jsonBody = JSON.parse(body)
-      const { result } = jsonBody
-      resolve(Array.isArray(result) ? result[0] : result)
+      try {
+        const jsonBody = JSON.parse(body)
+        const { result } = jsonBody
+        resolve(Array.isArray(result) ? result[0] : result)
+      } catch(e) {
+        resolve(null)
+      }
     })
   })
 }
@@ -35,6 +39,7 @@ const getTelegramFromSourceCode = (sourceCode) => {
 
 const processContractAddress = async (address) => {
   const contract = await getContractModule(address, 'getsourcecode')
+  if (!contract) return null
   const { SourceCode, ContractName: contractName } = contract
   let sourceCode = ''
   try {
