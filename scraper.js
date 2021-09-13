@@ -14,7 +14,7 @@ const scrapeContractAddresses = async (pages=1) => {
   const root = new Root({ pagination: { routingString: 'contractsVerified', begin: 1, end: pages } })
 
   const addressesTask = new CollectContent('.table-responsive > table > tbody > tr > td:nth-child(1) > a')
-  root.addOperation(address)
+  root.addOperation(addressesTask)
 
   await scraper.scrape(root)
   const addresses = addressesTask.data

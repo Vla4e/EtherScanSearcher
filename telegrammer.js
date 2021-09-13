@@ -34,43 +34,41 @@ const initClients = async () => {
   return true
 }
 
-const searchTelegramGroup = async ({ address, contract: username }) => {
+const searchTelegramGroup = async (username) => {
   try {
     const searchChatResult = await tdUserClient.invoke({
       _: 'searchPublicChat',
       username
     })
     console.log('Found channel!', searchChatResult.title)
-
-    const sendMessageResult = await tdBotClient.invoke({
-      _: 'sendMessage',
-      chat_id: CHAT_ID,
-      input_message_content: {
-        _: 'inputMessageText',
-        text: {
-          _: 'formattedText',
-          text: `Heya! Found a corresponding Telegram group for an Ethereum contract at https://etherscan.io/contractsVerified/${address} : ${username}.`
-        }
-      }
-    })
-    console.log('Message sent!')
     return username
   } catch(e) {
-    console.error('Error!', e)
+    console.error('Error while finding channel!', e)
     return null
   }
 }
 
-initClients()
-  // .then(async () => {
-  //   const result = await searchTelegramGroup({
-  //     address: '0xea5b5f81d8ad4e5ffa426cdceab4164bb08dfd60',
-  //     contract: '@PartyADA'
-  //   })
-  //   console.log(result, 0)
-  // })
+const sendAlertForDetectedGroup = ({ address, contract: username }) => {
+  await tdBotClient.invoke({
+    _: 'sendMessage',
+    chat_id: CHAT_ID,
+    input_message_content: {
+      _: 'inputMessageText',
+      text: {
+        _: 'formattedText',
+        text: `Heya! Found a corresponding Telegram group for an Ethereum contract at https://etherscan.io/contractsVerified/${address} : ${username}.`
+      }
+    }
+  })
+  console.log('Message alert sent!')
+}
 
-module.exports = searchTelegramGroup
+initClients()
+
+module.exports = {
+  searchTelegramGroup,
+  sendAlertForDetectedGroup
+}
 
 // nvm install -s 12 --shared-openssl --shared-openssl-includes=/usr/local/opt/openssl@1.1/include
 // \ s--shared-openssl-libpath=/usr/local/opt/openssl@1.1/lib
