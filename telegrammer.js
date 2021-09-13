@@ -6,25 +6,33 @@ const API_HASH = '979a9214b4df8e1e02a67c68fa952563'
 const BOT_TOKEN = '1954690765:AAHqY3vFVSnvu_zhMHeMiky_a28kUnP4i80'
 const CHAT_ID = 1196185249
 
-const tdUserClient = new Client(new TDLib(), {
-  apiId: API_ID,
-  apiHash: API_HASH,
-  databaseDirectory: '_td_database/user',
-  filesDirectory: '_td_files/user'
-})
-tdUserClient.connectAndLogin(() => ({
-  type: 'user'
-})).then(() => console.log('Logged in user!'))
+let tdUserClient = null
+let tdBotClient = null
 
-const tdBotClient = new Client(new TDLib(), {
-  apiId: API_ID,
-  apiHash: API_HASH,
-  databaseDirectory: '_td_database/bot',
-  filesDirectory: '_td_files/bot'
-})
-tdBotClient.connectAndLogin(() => ({
-  type: 'bot', getToken: retry => retry ? Promise.reject('Bad token') : Promise.resolve(BOT_TOKEN)
-})).then(() => console.log('Logged in bot!'))
+const initClients = async () => {
+  tdUserClient = new Client(new TDLib(), {
+    apiId: API_ID,
+    apiHash: API_HASH,
+    databaseDirectory: '_td_database/user',
+    filesDirectory: '_td_files/user',
+    verbosityLevel: 0
+  })
+  await tdUserClient.connectAndLogin(() => ({ type: 'user' }))
+  console.log('Logged in user!')
+  
+  tdBotClient = new Client(new TDLib(), {
+    apiId: API_ID,
+    apiHash: API_HASH,
+    databaseDirectory: '_td_database/bot',
+    filesDirectory: '_td_files/bot',
+    verbosityLevel: 0
+  })
+  await tdBotClient.connectAndLogin(() => ({
+    type: 'bot', getToken: retry => retry ? Promise.reject('Bad token') : Promise.resolve(BOT_TOKEN)
+  }))
+  console.log('Logged in bot!')
+  return true
+}
 
 const searchTelegramGroup = async ({ address, contract: username }) => {
   try {
@@ -32,7 +40,7 @@ const searchTelegramGroup = async ({ address, contract: username }) => {
       _: 'searchPublicChat',
       username
     })
-    console.log('Found chat!', searchChatResult.title)
+    console.log('Found channel!', searchChatResult.title)
 
     const sendMessageResult = await tdBotClient.invoke({
       _: 'sendMessage',
@@ -45,13 +53,22 @@ const searchTelegramGroup = async ({ address, contract: username }) => {
         }
       }
     })
-    console.log('Message sent!', sendMessageResult)
+    console.log('Message sent!')
     return username
   } catch(e) {
     console.error('Error!', e)
     return null
   }
 }
+
+initClients()
+  // .then(async () => {
+  //   const result = await searchTelegramGroup({
+  //     address: '0xea5b5f81d8ad4e5ffa426cdceab4164bb08dfd60',
+  //     contract: '@PartyADA'
+  //   })
+  //   console.log(result, 0)
+  // })
 
 module.exports = searchTelegramGroup
 
