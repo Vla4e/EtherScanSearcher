@@ -63,4 +63,4 @@ const processContractAddresses = async (addresses) => {
   return results
 }
 
-module.exports = processContractAddresses
+module.exports = { processContractAddresses, processContractAddress}

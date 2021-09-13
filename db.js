@@ -2,14 +2,25 @@ const Datastore = require('nedb');
 const { DownloadContent } = require('nodejs-web-scraper');
 const db = new Datastore({ filename: 'Tg.db', autoload: true });
 
-let removeAll = false; // True = se brishi cela databaza pri "node db.js"
+let removeAll = false; // if set to True -> deletes whole database when running "node db.js" in cmd.
 
-let TgContracts = {
-    contract: '',
-    address: '',
-    telegram: null,
-    telegramChecked: false,
-    alertSent: false
+async function fetchUncheckedAddresses(){
+    return new Promise((resolve, reject) => {
+            const UncheckedAddresses = []
+            db.find({telegramChecked: false}, (err, doc) => {
+                
+                if(err){
+                    return reject(err)
+                }
+
+                doc.forEach(element => {  
+                    UncheckedAddresses.push(element.address)
+                    //return UncheckedAddresses
+                });
+                return resolve(UncheckedAddresses)
+            })
+        }
+    )
 }
 
 function doesExist(resultAddress){
@@ -17,7 +28,7 @@ function doesExist(resultAddress){
         try{
             let exist = false
             db.findOne({address: resultAddress}, function (err, doc){
-                console.log(doc)
+                //console.log(doc)
                     if(doc !== null && doc.address === resultAddress){
                         exist = true;
                     }
@@ -40,44 +51,18 @@ function insertContract(result){
     function (err, newDoc) {
     
     });
-    // console.log(insCont)
-    // db.find({ contract: insCont.contract}, function (err, insCont) {
-    //     try{
-    //         if(insCont._id){
-    //             console.log(insCont._id)
-    //             let exists = true;
-    //             console.log(exists);
-    //         } else {
-    //             console.log(err)
-    //             console.log(insCont)
-    //             db.insert({
-    //                 contract: insCont.contract, 
-    //                 address: insCont.address,
-    //                 telegram: insCont.telegram,
-    //                 telegramChecked: false, 
-    //                 alertSent: false,}, 
-    //             function (err, newDoc) {
-                
-    //             });
-    //         }
-    //     }
-    //     catch(e){
-    //         console.error(e);
-    //     }
-    //   });
-
 }
 
-function removeContract(){
-    db.remove({ _id: this.contractId}, {}, function (err, numRemoved) {
-        // numRemoved = 1
-      });
+// function removeContract(){
+//     db.remove({ _id: this.contractId}, {}, function (err, numRemoved) {
+//         // numRemoved = 1
+//       });
       
-}
+// }
 
 if(removeAll){
     db.remove({}, { multi: true }, function (err, numRemoved) {
     });
 }
 
-module.exports = { insertContract, doesExist }
+module.exports = { insertContract, doesExist, fetchUncheckedAddresses }
