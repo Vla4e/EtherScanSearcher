@@ -56,7 +56,7 @@ const sendAlertForDetectedGroup = async ({ address, contract: username }) => {
       _: 'inputMessageText',
       text: {
         _: 'formattedText',
-        text: `Heya! Found a corresponding Telegram group for an Ethereum contract at https://etherscan.io/address/${address} : ${username}.`
+        text: `Heya! Found a corresponding Telegram group for an Ethereum contract at https://etherscan.io/address/${address} : @${username}.`
       }
     }
   })

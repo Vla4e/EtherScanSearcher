@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "nedb": "^1.8.0",
+    "node-cron": "^3.0.0",
     "nodejs-web-scraper": "^6.0.1",
     "request": "^2.88.2",
     "save": "^2.4.0",

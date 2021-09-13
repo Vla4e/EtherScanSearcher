@@ -1,9 +1,13 @@
+const cron = require('node-cron')
+
 const scrapeContractAddresses = require('./scraper')
 const { processContractAddresses } = require('./etherrer')
 const { insertContract, updateContract, doesExist, fetchStubbornNotTelegram, fetchWithPendingAlert } = require('./db')
 const { searchTelegramGroup, sendAlertForDetectedGroup } = require('./telegrammer')
 
 const runIteration = async () => {
+  console.log('Iteration start!')
+
   const addresses = await scrapeContractAddresses(pages=1)
   const newAddresses = []
 
@@ -18,13 +22,14 @@ const runIteration = async () => {
   await Promise.all(contracts.map(async contract => await insertContract(contract)))
 
   const contractsNeedTdlibCheck = await fetchStubbornNotTelegram()
-  await Promise.all(contractsNeedTdlibCheck.map(async (contract) => {
-    const hasMatchingGroup = await searchTelegramGroup(contract.contract)
+  while (contractsNeedTdlibCheck.length) {
+    const contractNeedTdlibCheck = contractsNeedTdlibCheck.pop()
+    const hasMatchingGroup = await searchTelegramGroup(contractNeedTdlibCheck.contract)
     if (hasMatchingGroup) {
-      return await updateContract(contract.address, { telegram: contract.contract })
+      return await updateContract(contractNeedTdlibCheck.address, { telegram: contractNeedTdlibCheck.contract })
     }
-    return Promise.resolve()
-  }))
+    await new Promise(resolve => setTimeout(resolve, 500))
+  }
 
   const contractsPendingAlert = await fetchWithPendingAlert()
   await Promise.all(contractsPendingAlert.map(async (contract) => {
@@ -32,8 +37,11 @@ const runIteration = async () => {
     return await updateContract(contract.address, { alertSent: true })
   }))
 
-  console.log('Iteration done!')
+  console.log('Iteration end!')
   return true
 }
 
-runIteration()
+cron.schedule('*/30 * * * *', () => {
+  runIteration()
+})
+runIteration() // run once immediately
