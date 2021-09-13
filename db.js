@@ -2,7 +2,7 @@ const Datastore = require('nedb');
 const { DownloadContent } = require('nodejs-web-scraper');
 const db = new Datastore({ filename: 'Tg.db', autoload: true });
 
-let removeAll = true; // True = se brishi cela databaza pri "node db.js"
+let removeAll = false; // True = se brishi cela databaza pri "node db.js"
 
 let TgContracts = {
     contract: '',
@@ -13,15 +13,21 @@ let TgContracts = {
 }
 
 function doesExist(resultAddress){
-    let exist = false;
-    db.findOne({address: resultAddress}, function (err, doc){
-        console.log(doc)
-            if(resultAddress === doc.address){
-                exist = true;
-            }
+    return new Promise((resolve, reject) => {
+        try{
+            let exist = false
+            db.findOne({address: resultAddress}, function (err, doc){
+                console.log(doc)
+                    if(doc !== null && doc.address === resultAddress){
+                        exist = true;
+                    }
+                    return resolve(exist);
+                })
+        }
+        catch(e){
+            return reject(e)
+        }
     })
-    console.log(exist)
-    return exist;
 }
 
 function insertContract(result){
@@ -74,4 +80,4 @@ if(removeAll){
     });
 }
 
-module.exports = insertContract, doesExist
+module.exports = { insertContract, doesExist }
