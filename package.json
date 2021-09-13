@@ -1,5 +1,5 @@
 {
-  "name": "etherscanbot",
+  "name": "etherscanner",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,6 +9,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "nodejs-web-scraper": "^6.0.1",
+    "request": "^2.88.2",
+    "save": "^2.4.0",
     "tdl": "^7.0.0",
     "tdl-tdlib-addon": "^1.0.1"
   }
