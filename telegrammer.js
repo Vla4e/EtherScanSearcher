@@ -4,7 +4,7 @@ const { TDLib } = require('tdl-tdlib-addon')
 const API_ID = 8224639
 const API_HASH = '979a9214b4df8e1e02a67c68fa952563'
 const BOT_TOKEN = '1954690765:AAHqY3vFVSnvu_zhMHeMiky_a28kUnP4i80'
-const CHAT_ID = 1196185249
+const CHAT_ID = 1736127333
 
 let tdUserClient = null
 let tdBotClient = null
@@ -43,7 +43,7 @@ const searchTelegramGroup = async (username) => {
     console.log('Found channel!', searchChatResult.title)
     return username
   } catch(e) {
-    console.error('Error while finding channel!', e)
+    console.error(e)
     return null
   }
 }
@@ -69,6 +69,3 @@ module.exports = {
   searchTelegramGroup,
   sendAlertForDetectedGroup
 }
-
-// nvm install -s 12 --shared-openssl --shared-openssl-includes=/usr/local/opt/openssl@1.1/include
-// \ s--shared-openssl-libpath=/usr/local/opt/openssl@1.1/lib

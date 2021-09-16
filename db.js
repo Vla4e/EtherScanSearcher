@@ -65,7 +65,7 @@ const insertContract = (result) => {
   })
 }
 
-const updateContract = (address, newValues) => { // TODO: fix creates duplicates!
+const updateContract = (address, newValues) => {
   return new Promise((resolve, reject) => {
     db.update({
       address

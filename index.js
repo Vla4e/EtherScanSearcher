@@ -26,22 +26,25 @@ const runIteration = async () => {
     const contractNeedTdlibCheck = contractsNeedTdlibCheck.pop()
     const hasMatchingGroup = await searchTelegramGroup(contractNeedTdlibCheck.contract)
     if (hasMatchingGroup) {
-      return await updateContract(contractNeedTdlibCheck.address, { telegram: contractNeedTdlibCheck.contract })
+      await updateContract(contractNeedTdlibCheck.address, { telegram: contractNeedTdlibCheck.contract })
     }
     await new Promise(resolve => setTimeout(resolve, 500))
   }
 
   const contractsPendingAlert = await fetchWithPendingAlert()
-  await Promise.all(contractsPendingAlert.map(async (contract) => {
-    await sendAlertForDetectedGroup(contract)
-    return await updateContract(contract.address, { alertSent: true })
-  }))
+  while (contractsPendingAlert.length) {
+    const contractPendingAlert = contractsPendingAlert.pop()
+    await sendAlertForDetectedGroup(contractPendingAlert)
+    await updateContract(contractPendingAlert.address, { alertSent: true })
+    await new Promise(resolve => setTimeout(resolve, 1000))
+  }
 
   console.log('Iteration end!')
   return true
 }
 
-cron.schedule('*/30 * * * *', () => {
+const interval = 30 // insert whole amount of minutes
+cron.schedule(`*/${interval} * * * *`, () => {
   runIteration()
 })
 runIteration() // run once immediately
