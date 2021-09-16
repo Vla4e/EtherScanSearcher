@@ -43,7 +43,6 @@ const searchTelegramGroup = async (username) => {
     console.log('Found channel!', searchChatResult.title)
     return username
   } catch(e) {
-    console.error(e)
     return null
   }
 }

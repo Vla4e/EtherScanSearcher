@@ -32,7 +32,6 @@ const getTelegramFromSourceCode = (sourceCode, address) => {
     }
     return null
   } catch(e) {
-    console.error(address, e)
     return null
   }
 }

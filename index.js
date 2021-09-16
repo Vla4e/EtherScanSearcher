@@ -5,10 +5,13 @@ const { processContractAddresses } = require('./etherrer')
 const { insertContract, updateContract, doesExist, fetchStubbornNotTelegram, fetchWithPendingAlert } = require('./db')
 const { searchTelegramGroup, sendAlertForDetectedGroup } = require('./telegrammer')
 
+const interval = 30 // insert whole amount of minutes
+const sendNotifs = 0 // 0/1 toggle
+
 const runIteration = async () => {
   console.log('Iteration start!')
 
-  const addresses = await scrapeContractAddresses(pages=1)
+  const addresses = await scrapeContractAddresses(pages=2)
   const newAddresses = []
 
   while (addresses.length) {
@@ -28,13 +31,13 @@ const runIteration = async () => {
     if (hasMatchingGroup) {
       await updateContract(contractNeedTdlibCheck.address, { telegram: contractNeedTdlibCheck.contract })
     }
-    await new Promise(resolve => setTimeout(resolve, 500))
+    await new Promise(resolve => setTimeout(resolve, 1000))
   }
 
   const contractsPendingAlert = await fetchWithPendingAlert()
   while (contractsPendingAlert.length) {
     const contractPendingAlert = contractsPendingAlert.pop()
-    await sendAlertForDetectedGroup(contractPendingAlert)
+    if (sendNotifs) await sendAlertForDetectedGroup(contractPendingAlert)
     await updateContract(contractPendingAlert.address, { alertSent: true })
     await new Promise(resolve => setTimeout(resolve, 1000))
   }
@@ -43,7 +46,6 @@ const runIteration = async () => {
   return true
 }
 
-const interval = 30 // insert whole amount of minutes
 cron.schedule(`*/${interval} * * * *`, () => {
   runIteration()
 })
